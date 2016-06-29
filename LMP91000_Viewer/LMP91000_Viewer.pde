@@ -7,6 +7,7 @@ int[]   rxbuf = new int[pool+1];   // Массив-буфер для приня�
 boolean recive=false;              // Статус приема
 PFont   font1,font2,font3,font4;   // Шрифты
 int pos;
+int progress = 0;  //ширина прогрессбара
 
 Button btn_serial_up;
 Button btn_serial_dn;
@@ -76,7 +77,7 @@ int marg = 45;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup()
 {
-  size( 350, 530 );                                // Размер окна Windows для отрисовки
+  size( 350, 550 );                                // Размер окна Windows для отрисовки
   smooth(10);
   
   font1 = loadFont("Vrinda-Bold-12.vlw");          // Подключаем шрифт
@@ -249,6 +250,8 @@ void draw()
   text(hex(rxbuf[2],2)+" TIACN",width-119,450);
   text(hex(rxbuf[3],2)+" REFCN",width-119,460);
   text(hex(rxbuf[4],2)+" MODCN",width-119,470);
+  //--------------------------------------------------------------------------------------------------------------------   
+  // rect(18, 480, (progress*310)/100, 10, 3); 
   //--------------------------------------------------------------------------------------------------------------------  
   stroke(255);                                                // Отрисовываем линии разделения
   line(0,height-22,width,height-22);     
@@ -542,16 +545,35 @@ void mousePressed()
     }
   }
   
-  if (read.MouseIsOver()){
+  if (read.MouseIsOver() && serial_port != null){
+      serial_port.write(65);
+      delay(500);
       serial_port.write(65);
   }
   
-  if (write.MouseIsOver()){
+  if (write.MouseIsOver() && serial_port != null){
       serial_port.write(83);
-      delay(500);
+      progress = 16;
+      delay(100);
+      
+      serial_port.write(rxbuf[2]);
+      progress = 32;
+      delay(100);
+      serial_port.write(rxbuf[3]);
+      progress = 48;
+      delay(100);
+      serial_port.write(rxbuf[4]);
+      progress = 64;
+      delay(100);
+      serial_port.write(0x00);
+      progress = 80;
+      
+      delay(1000);
       serial_port.write(65);
+      progress = 100;
       delay(100);
       serial_port.write(65);
+      progress = 0;
   }
 //**********************************************************************************//
   if (tia_000.MouseIsOver()){rxbuf[2] &= ~0x1C;}
@@ -603,14 +625,4 @@ void mousePressed()
   if (mode_011.MouseIsOver()){rxbuf[4] &= ~0x07; rxbuf[4] |= 0x3;}
   if (mode_110.MouseIsOver()){rxbuf[4] &= ~0x07; rxbuf[4] |= 0x6;}
   if (mode_111.MouseIsOver()){rxbuf[4] &= ~0x07; rxbuf[4] |= 0x7;}
-/*
-  pos = (rxbuf[4] & 0x07);
-
-Button mode_000;
-Button mode_001;
-Button mode_010;
-Button mode_011;
-Button mode_110;
-Button mode_111;
-*/
 }
